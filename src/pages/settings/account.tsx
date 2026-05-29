@@ -37,7 +37,7 @@ const Account = () => {
       setIsSendingOtp(true);
       await sendDeleteAccountOtp().unwrap();
       toast.success("OTP sent to your email");
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(err?.data?.message || "Unable to send OTP");
     } finally {
       setIsSendingOtp(false);
