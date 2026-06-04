@@ -39,11 +39,13 @@ export interface ResendOtpRequest {
 
 export interface VerifyOtpResponse {
 	message?: string;
-	user: AuthUser;
-	accessToken: string;
-	expiresAt: number;
-	reportSetting: AuthReportSetting | null;
-	verified: boolean;
+	data: {
+		user: AuthUser;
+		accessToken: string;
+		expiresAt: number;
+		reportSetting: AuthReportSetting | null;
+		verified: boolean;
+	};
 }
 
 export interface ForgotPasswordRequest {
