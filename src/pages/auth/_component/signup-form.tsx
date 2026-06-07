@@ -23,6 +23,7 @@ const schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(6, "Confirm Password must be at least 6 characters"),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -36,6 +37,12 @@ const SignUpForm = () => {
   });
 
   const onSubmit = (values: FormValues) => {
+    if(values.password !== values.confirmPassword){
+      toast.error("Passwords do not match. Please try again");
+      form.setValue("password","");
+      form.setValue("confirmPassword","");
+      return;
+    }
     register(values)
       .unwrap()
       .then(() => {
@@ -52,7 +59,7 @@ const SignUpForm = () => {
         if (apiError.data?.errorCode === "AUTH_EMAIL_ALREADY_EXISTS") {
           toast.error(
             apiError.data?.message ||
-              "An account with this email already exists. Please sign in instead."
+            "An account with this email already exists. Please sign in instead."
           );
           return;
         }
@@ -110,6 +117,19 @@ const SignUpForm = () => {
                   <PasswordInput placeholder="Min. 6 characters" {...field} />
                 </FormControl>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField 
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl>
+                  <PasswordInput placeholder="Re-enter your password" {...field} />
+                </FormControl>
+                <FormMessage/>
               </FormItem>
             )}
           />
