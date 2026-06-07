@@ -1,7 +1,7 @@
 import {useEffect} from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Loader } from "lucide-react";
+import { Loader, Check, Circle } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,31 +51,14 @@ const SignUpForm = () => {
     mode: "onTouched",
   });
 
-  const password = form.watch("password");
-  const confirmPassword = form.watch("confirmPassword");
-
-  useEffect(() => {
-    if (confirmPassword) {
-      form.trigger("confirmPassword");
-    }
-  }, [password, confirmPassword, form]);
-
-  const onInvalid = (error: any) => {
-    if (error?.confirmPassword?.message === "Passwords do not match") {
-      toast.error(error.confirmPassword.message);
-
-      form.setValue("password", "", {
-        shouldValidate: false,
-        shouldDirty: true,
-      });
-      form.setValue("confirmPassword", "", {
-        shouldValidate: false,
-        shouldDirty: true,
-      });
-      form.clearErrors(["password", "confirmPassword"]);
-    }
-  };
-
+  const passwordValue = form.watch("password") ?? "";
+  const rules = [
+    { label: "At least 8 characters", valid: passwordValue.length >= 8 },
+    { label: "One uppercase letter", valid: /[A-Z]/.test(passwordValue) },
+    { label: "One lowercase letter", valid: /[a-z]/.test(passwordValue) },
+    { label: "One number", valid: /[0-9]/.test(passwordValue) },
+    { label: "One special character", valid: /[^A-Za-z0-9]/.test(passwordValue) },
+  ];
 
   const onSubmit = (values: FormValues) => {
     register(values)
@@ -90,15 +73,13 @@ const SignUpForm = () => {
       })
       .catch((error) => {
         const apiError = error as ErrorResponse;
-
         if (apiError.data?.errorCode === "AUTH_EMAIL_ALREADY_EXISTS") {
           toast.error(
             apiError.data?.message ||
-            "An account with this email already exists. Please sign in instead."
+              "An account with this email already exists."
           );
           return;
         }
-
         toast.error(apiError.data?.message || "Failed to sign up");
       });
   };
@@ -106,7 +87,7 @@ const SignUpForm = () => {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit, onInvalid)}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-6"
       >
         <div className="flex flex-col items-center gap-2 text-center">
@@ -115,13 +96,17 @@ const SignUpForm = () => {
             Fill information below to sign up
           </p>
         </div>
-        <div className="grid gap-6">
+
+        {/* Fields */}
+        <div className="flex flex-col gap-4">
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel className="text-sm font-medium text-zinc-700">
+                  Full name
+                </FormLabel>
                 <FormControl>
                   <Input placeholder="Your full name" {...field} />
                 </FormControl>
@@ -129,25 +114,31 @@ const SignUpForm = () => {
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-sm font-medium text-zinc-700">
+                  Email
+                </FormLabel>
                 <FormControl>
-                  <Input placeholder="Your email address" {...field} />
+                  <Input placeholder="you@example.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel className="text-sm font-medium text-zinc-700">
+                  Password
+                </FormLabel>
                 <FormControl>
                   <PasswordInput placeholder="Min. 8 characters" {...field} />
                 </FormControl>
@@ -164,24 +155,54 @@ const SignUpForm = () => {
                 <FormControl>
                   <PasswordInput placeholder="Re-enter your password" {...field} />
                 </FormControl>
+
+                {/* Password rules */}
+                {passwordValue.length > 0 && (
+                  <div className="mt-2.5 grid grid-cols-1 gap-1.5">
+                    {rules.map((rule) => (
+                      <div
+                        key={rule.label}
+                        className={`flex items-center gap-2 text-xs transition-colors ${
+                          rule.valid ? "text-[#015200]" : "text-zinc-400"
+                        }`}
+                      >
+                        {rule.valid ? (
+                          <Check className="h-3 w-3 shrink-0" />
+                        ) : (
+                          <Circle className="h-3 w-3 shrink-0" />
+                        )}
+                        <span>{rule.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button disabled={isLoading} type="submit" className="w-full">
-            {isLoading && <Loader className="h-4 w-4 animate-spin" />}
-            Sign up
-          </Button>
         </div>
-        <div className="text-center text-sm">
+
+        {/* Submit */}
+        <Button
+          disabled={isLoading}
+          type="submit"
+          className="w-full h-11 bg-[#015200] hover:bg-black text-white font-semibold rounded-xl transition-colors"
+        >
+          {isLoading && <Loader className="h-4 w-4 animate-spin mr-2" />}
+          Create account
+        </Button>
+
+        {/* Footer */}
+        <p className="text-center text-sm text-zinc-500">
           Already have an account?{" "}
           <Link
             to={AUTH_ROUTES.SIGN_IN}
-            className="underline underline-offset-4"
+            className="text-[#015200] font-semibold hover:underline"
           >
             Sign in
           </Link>
-        </div>
+        </p>
       </form>
     </Form>
   );

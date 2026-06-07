@@ -4,6 +4,7 @@ interface FormatCurrencyOptions {
   isExpense?: boolean;
   currency?: string;
   locale?: string;
+  currencySymbol?: string;
 }
 
 export function formatCurrency(
@@ -16,10 +17,27 @@ export function formatCurrency(
     isExpense = false,
     currency = "USD",
     locale = "en-US",
+    currencySymbol,
   } = options;
 
+  const resolveSymbol = () =>
+    currencySymbol ??
+    new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    })
+      .formatToParts(0)
+      .find((p) => p.type === "currency")?.value ??
+    "$";
+
+  const symbol = resolveSymbol();
+
   if (!amount || isNaN(amount)) {
-    return compact ? "$0" : "$0.00";
+    return `${symbol}${new Intl.NumberFormat(locale, {
+      minimumFractionDigits: compact ? 0 : 2,
+      maximumFractionDigits: compact ? 0 : 2,
+    }).format(0)}`;
   }
 
   const absAmount = Math.abs(amount);
@@ -33,19 +51,10 @@ export function formatCurrency(
     } else if (absAmount >= 1_000) {
       formattedAmount = `${(absAmount / 1_000).toFixed(1)}K`;
     } else {
-      formattedAmount = absAmount.toFixed(0);
+      formattedAmount = absAmount.toFixed(absAmount % 1 === 0 ? 0 : 2);
     }
 
-    const symbol = new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 0,
-    })
-      .formatToParts(0)
-      .find((p) => p.type === "currency")?.value ?? "$";
-
     const currencyValue = `${symbol}${formattedAmount}`;
-
     if (showSign) {
       return isExpense ? `-${currencyValue}` : `+${currencyValue}`;
     }
@@ -53,14 +62,13 @@ export function formatCurrency(
   }
 
   formattedAmount = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(absAmount);
 
+  const currencyValue = `${symbol}${formattedAmount}`;
   if (showSign) {
-    return isExpense ? `-${formattedAmount}` : `+${formattedAmount}`;
+    return isExpense ? `-${currencyValue}` : `+${currencyValue}`;
   }
-  return amount < 0 ? `-${formattedAmount}` : formattedAmount;
+  return amount < 0 ? `-${currencyValue}` : currencyValue;
 }

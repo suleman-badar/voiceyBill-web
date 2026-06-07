@@ -4,6 +4,7 @@ export interface AuthUser {
 	email: string;
 	profilePicture?: string | null;
 	isVerified?: boolean;
+	baseCurrency?: string;
 }
 
 export interface AuthReportSetting {
@@ -24,6 +25,7 @@ export interface LoginResponse {
 	message?: string;
 	user: AuthUser;
 	accessToken: string;
+	refreshToken?: string;
 	expiresAt: number;
 	reportSetting: AuthReportSetting | null;
 }
@@ -39,11 +41,14 @@ export interface ResendOtpRequest {
 
 export interface VerifyOtpResponse {
 	message?: string;
-	user: AuthUser;
-	accessToken: string;
-	expiresAt: number;
-	reportSetting: AuthReportSetting | null;
-	verified: boolean;
+	data: {
+		user: AuthUser;
+		accessToken: string;
+		refreshToken?: string;
+		expiresAt: number;
+		reportSetting: AuthReportSetting | null;
+		verified: boolean;
+	};
 }
 
 export interface ForgotPasswordRequest {
@@ -69,4 +74,10 @@ export interface ErrorResponse {
 		message?: string;
 		errorCode?: string;
 	};
+}
+
+export interface RefreshTokenResponse {
+	accessToken: string;
+	expiresAt: number;
+	refreshToken?: string;
 }

@@ -1,54 +1,44 @@
-import Logo from "@/components/logo/logo";
-import { CheckCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import ForgotPasswordForm from "./_component/forgot-password-form";
 
 const ForgotPassword = () => {
-  const highlights = [
-    "Reset access with a secure email code",
-    "Codes expire automatically for safety",
-    "Restore your account without support",
-    "Keep your finance data protected",
-  ];
-
   return (
-    <div className="min-h-svh grid lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-start">
-          <Logo url="/" />
-        </div>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-sm">
-            <ForgotPasswordForm />
-          </div>
-        </div>
-      </div>
+    <div className="home-page-wrapper min-h-svh bg-background text-foreground relative flex items-center justify-center p-4 sm:p-6">
+      {/* Subtle grid texture */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(1,82,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(1,82,0,0.04) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
 
-      <div className="hidden lg:flex flex-col justify-between bg-[var(--app-dark)] text-white p-12">
-        <div />
-        <div className="space-y-8 max-w-md">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white/80">
-              <span className="w-1.5 h-1.5 rounded-full bg-white inline-block" />
-              Account recovery
-            </div>
-            <h2 className="text-3xl font-bold leading-snug">
-              Recover your <span className="text-white">VoiceyBill</span> access
-            </h2>
-            <p className="text-white/60 leading-relaxed">
-              We’ll send a one-time reset code to your email so you can create a new password.
-            </p>
-          </div>
-
-          <ul className="space-y-3">
-            {highlights.map((item) => (
-              <li key={item} className="flex items-center gap-3">
-                <CheckCircle className="w-4 h-4 flex-shrink-0 text-white/60" />
-                <span className="text-sm text-white/80">{item}</span>
-              </li>
-            ))}
-          </ul>
+      <div className="relative w-full max-w-[440px]">
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2.5">
+            <img
+              src="/logo.png"
+              alt="VoiceyBill"
+              className="w-10 h-10 rounded-full object-cover shrink-0"
+            />
+            <span className="font-display font-bold text-xl tracking-tight text-foreground">
+              VoiceyBill
+            </span>
+          </Link>
         </div>
-        <p className="text-white/30 text-sm">© 2025 VoiceyBill</p>
+
+        {/* Card */}
+        <div className="bg-card text-card-foreground rounded-3xl border border-border shadow-sm p-8 sm:p-10">
+          <ForgotPasswordForm />
+        </div>
+
+        <p className="text-center text-xs text-muted-foreground mt-6">
+          <Link to="/" className="hover:text-foreground transition-colors">
+            ← Back to home
+          </Link>
+        </p>
       </div>
     </div>
   );
