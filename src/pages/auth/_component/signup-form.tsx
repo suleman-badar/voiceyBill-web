@@ -1,3 +1,4 @@
+import {useEffect} from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Loader } from "lucide-react";
@@ -19,22 +20,23 @@ import {
 import { useRegisterMutation } from "@/features/auth/authAPI";
 import type { ErrorResponse } from "@/features/auth/authType";
 
+
 export const passwordSchema = z
   .string()
   .trim()
   .min(8, "Password must be at least 8 characters")
   .regex(/[A-Z]/, "Must contain uppercase letter")
   .regex(/[0-9]/, "Must contain a number")
-  .regex(/[^A-Za-z0-9]/, "Must contain special character");  
+  .regex(/[^A-Za-z0-9]/, "Must contain special character");
 
 const schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: passwordSchema,
-  confirmPassword: z.string().min(8, "Confirm Password must be at least 8 characters"),
+  confirmPassword: z.string().min(1, "Confirm Password is required"),
 })
-.refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match. Please try again",
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
     path: ["confirmPassword"]
   });
 
@@ -46,7 +48,34 @@ const SignUpForm = () => {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
+    mode: "onTouched",
   });
+
+  const password = form.watch("password");
+  const confirmPassword = form.watch("confirmPassword");
+
+  useEffect(() => {
+    if (confirmPassword) {
+      form.trigger("confirmPassword");
+    }
+  }, [password, confirmPassword, form]);
+
+  const onInvalid = (error: any) => {
+    if (error?.confirmPassword?.message === "Passwords do not match") {
+      toast.error(error.confirmPassword.message);
+
+      form.setValue("password", "", {
+        shouldValidate: false,
+        shouldDirty: true,
+      });
+      form.setValue("confirmPassword", "", {
+        shouldValidate: false,
+        shouldDirty: true,
+      });
+      form.clearErrors(["password", "confirmPassword"]);
+    }
+  };
+
 
   const onSubmit = (values: FormValues) => {
     register(values)
@@ -77,7 +106,7 @@ const SignUpForm = () => {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(onSubmit, onInvalid)}
         className="flex flex-col gap-6"
       >
         <div className="flex flex-col items-center gap-2 text-center">
@@ -126,7 +155,7 @@ const SignUpForm = () => {
               </FormItem>
             )}
           />
-          <FormField 
+          <FormField
             control={form.control}
             name="confirmPassword"
             render={({ field }) => (
@@ -135,7 +164,7 @@ const SignUpForm = () => {
                 <FormControl>
                   <PasswordInput placeholder="Re-enter your password" {...field} />
                 </FormControl>
-                <FormMessage/>
+                <FormMessage />
               </FormItem>
             )}
           />
