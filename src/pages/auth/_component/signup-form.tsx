@@ -19,12 +19,24 @@ import {
 import { useRegisterMutation } from "@/features/auth/authAPI";
 import type { ErrorResponse } from "@/features/auth/authType";
 
+export const passwordSchema = z
+  .string()
+  .trim()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Z]/, "Must contain uppercase letter")
+  .regex(/[0-9]/, "Must contain a number")
+  .regex(/[^A-Za-z0-9]/, "Must contain special character");  
+
 const schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Confirm Password must be at least 6 characters"),
-});
+  password: passwordSchema,
+  confirmPassword: z.string().min(8, "Confirm Password must be at least 8 characters"),
+})
+.refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match. Please try again",
+    path: ["confirmPassword"]
+  });
 
 type FormValues = z.infer<typeof schema>;
 
@@ -37,12 +49,6 @@ const SignUpForm = () => {
   });
 
   const onSubmit = (values: FormValues) => {
-    if(values.password !== values.confirmPassword){
-      toast.error("Passwords do not match. Please try again");
-      form.setValue("password","");
-      form.setValue("confirmPassword","");
-      return;
-    }
     register(values)
       .unwrap()
       .then(() => {
@@ -114,7 +120,7 @@ const SignUpForm = () => {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <PasswordInput placeholder="Min. 6 characters" {...field} />
+                  <PasswordInput placeholder="Min. 8 characters" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
